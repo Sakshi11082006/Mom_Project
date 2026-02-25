@@ -1,0 +1,251 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Data.SqlClient;
+using Mom_Project.Models;
+using System.Data;
+
+namespace Mom_Project.Controllers
+{
+    public class StaffController : Controller
+    {
+        public ActionResult<List<StaffModel>> StaffList()
+        {
+            List<StaffModel> list = new List<StaffModel>();
+
+            SqlConnection con = new SqlConnection("Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
+
+            SqlCommand cmd = new SqlCommand();
+            cmd.Connection = con;
+            cmd.CommandText = "PR_MOM_Staff_SelectAll";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            con.Open();
+
+            SqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                StaffModel s = new StaffModel();
+                s.StaffID = Convert.ToInt32(reader["StaffId"]);
+                s.StaffName = reader["StaffName"].ToString();
+                s.MobileNo = reader["MobileNo"].ToString();
+                s.EmailAddress = reader["EmailAddress"].ToString();
+                s.Remarks = reader["Remarks"].ToString();
+
+                list.Add(s);
+            }
+
+            reader.Close();
+
+            con.Close();
+
+            return View(list);
+        }
+
+        #region Add Edit
+        [HttpGet]
+        public IActionResult StaffAddEdit(int? id)
+        {
+            ViewBag.DepartmentList = FillDepartmentDropDown();
+
+            if (id > 0)
+            {
+                StaffModel staff = GetStaffById(id.Value);
+                return View(staff);
+            }
+            else
+            {
+                return View(new StaffModel());
+            }
+        }
+        #endregion
+
+        public StaffModel GetStaffById(int id)
+        {
+            StaffModel staff = new StaffModel();
+
+            SqlConnection con = new SqlConnection("Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
+
+            SqlCommand cmd = new SqlCommand("PR_MOM_Staff_SelectByPk", con);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@StaffID", id);
+
+            con.Open();
+
+            SqlDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                staff.StaffID = Convert.ToInt32(reader["StaffID"]);
+                staff.StaffName = reader["StaffName"].ToString();
+                staff.MobileNo = reader["MobileNo"].ToString();
+                staff.EmailAddress = reader["EmailAddress"].ToString();
+                staff.Remarks = reader["Remarks"].ToString();
+            }
+
+            reader.Close();
+            con.Close();
+
+            return staff;
+        }
+
+        #region Delete Record
+        public IActionResult DeleteStaff(int id)
+        {
+            try
+            {
+                SqlConnection con = new SqlConnection("Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
+
+                SqlCommand cmd = new SqlCommand();
+                cmd.Connection = con;
+                cmd.CommandText = "PR_MOM_Staff_DeleteByPk";
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                SqlParameter p = new SqlParameter();
+                p.ParameterName = "@StaffID";
+                p.SqlDbType = SqlDbType.Int;
+                p.Value = id;
+
+                cmd.Parameters.Add(p);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+
+                TempData["Success"] = "Delete Successfully.";
+
+                return RedirectToAction("StaffList");
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Foreign Key Constraint Violated.";
+                return RedirectToAction("StaffList");
+            }
+        }
+        #endregion
+
+        #region Save Record
+        [HttpPost]
+        public IActionResult Save(StaffModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    ViewBag.DepartmentList = FillDepartmentDropDown();
+                    return View("StaffAddEdit", model);
+                }
+
+                model.Modified = DateTime.UtcNow;
+
+                SqlConnection con = new SqlConnection("Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
+
+                SqlCommand cmd = new SqlCommand();
+                cmd.Connection = con;
+
+                if (model.StaffID == 0)
+                {
+                    cmd.CommandText = "PR_MOM_Staff_Insert";
+                    cmd.Parameters.AddWithValue("@Created", DateTime.Now);
+                }
+                else
+                {
+                    cmd.CommandText = "PR_MOM_Staff_UpdateByPk";
+                    cmd.Parameters.AddWithValue("@StaffID", model.StaffID);
+                }
+
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                SqlParameter deptId = new SqlParameter();
+                deptId.ParameterName = "@DepartmentID";
+                deptId.SqlDbType = SqlDbType.Int;
+                deptId.Value = model.DepartmentID;
+
+                SqlParameter staffName = new SqlParameter();
+                staffName.ParameterName = "@StaffName";
+                staffName.SqlDbType = SqlDbType.NVarChar;
+                staffName.Value = model.StaffName;
+
+                SqlParameter mobileNo = new SqlParameter();
+                mobileNo.ParameterName = "@MobileNo";
+                mobileNo.SqlDbType = SqlDbType.NVarChar;
+                mobileNo.Value = model.MobileNo;
+
+                SqlParameter emailAddress = new SqlParameter();
+                emailAddress.ParameterName = "@EmailAddress";
+                emailAddress.SqlDbType = SqlDbType.NVarChar;
+                emailAddress.Value = model.EmailAddress;
+
+                SqlParameter remarks = new SqlParameter();
+                remarks.ParameterName = "@Remarks";
+                remarks.SqlDbType = SqlDbType.NVarChar;
+                remarks.Value = model.Remarks ?? (object)DBNull.Value;
+
+                SqlParameter modified = new SqlParameter();
+                modified.ParameterName = "@Modified";
+                modified.SqlDbType = SqlDbType.DateTime;
+                modified.Value = model.Modified;
+
+                cmd.Parameters.Add(modified);
+                cmd.Parameters.Add(deptId);
+                cmd.Parameters.Add(staffName);
+                cmd.Parameters.Add(mobileNo);
+                cmd.Parameters.Add(emailAddress);
+                cmd.Parameters.Add(remarks);
+
+                con.Open();
+                int noOfRows = cmd.ExecuteNonQuery();
+                con.Close();
+
+                if(noOfRows > 0)
+                {
+                    if(model.StaffID == 0)
+                    {
+                        TempData["Success"] = "Staff added successfully";
+                    }
+                    else
+                    {
+                        TempData["Success"] = "Staff updated successfully";
+
+                    }
+                }
+
+                return RedirectToAction("StaffList");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("StaffList");
+            }
+        }
+        #endregion
+
+        #region Drop Down
+        public List<SelectListItem> FillDepartmentDropDown()
+        {
+            List<SelectListItem> deptList = new List<SelectListItem>();
+
+            SqlConnection con = new SqlConnection("Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
+
+            SqlCommand cmd = new SqlCommand();
+            cmd.Connection = con;
+            cmd.CommandText = "PR_MOM_Department_SelectAll";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            con.Open();
+
+            SqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                deptList.Add(new SelectListItem(reader["DepartmentName"].ToString(), reader["DepartmentID"].ToString()));
+            }
+
+            reader.Close();
+            con.Close();
+
+            return deptList;
+        }
+        #endregion
+    }
+}
