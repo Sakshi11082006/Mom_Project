@@ -54,10 +54,8 @@
                                 <label class="form-label fw-semibold">Meeting Type</label>
                                 <div class="input-group">
                                     <select class="form-select">
-                                        <option selected>All Types</option>
-                                        <option>Exam</option>
-                                        <option>Student</option>
-                                        <option>Review</option>
+                                        <option selected value="">All Types</option>
+                                        
                                     </select>
                                 </div>
                             </div>
@@ -66,10 +64,8 @@
                                 <label class="form-label fw-semibold">Department</label>
                                 <div class="input-group">
                                     <select class="form-select">
-                                        <option selected>All Departments</option>
-                                        <option>B.Tech</option>
-                                        <option>Bsc</option>
-                                        <option>BCA</option>
+                                        <option selected value="">All Departments</option>
+                                        
                                     </select>
                                 </div>
                             </div>
@@ -78,10 +74,8 @@
                                 <label class="form-label fw-semibold">Venue</label>
                                 <div class="input-group">
                                     <select class="form-select">
-                                        <option selected>All Venues</option>
-                                        <option>Staff Room</option>
-                                        <option>Meeting Room</option>
-                                        <option>Audi</option>
+                                        <option selected value="">All Venues</option>
+                                        
                                     </select>
                                 </div>
                             </div>
@@ -148,7 +142,7 @@
                                     <th>Meeting Description</th>
                                     <th>Document Path</th>
                                     <th>Is Cancelled</th>
-                                    @* <th>Cancellation Date Time</th> *@
+                                    <th>Cancellation Date Time</th>
                                     <th>Cancellation Reason</th>
                                     <th>Action</th>
                                 </tr>
@@ -164,12 +158,13 @@
                                         <td>@meetings.MeetingDescription</td>
                                         <td>@meetings.DocumentPath</td>
                                         <td>@meetings.IsCancelled</td>
-                                        @* <td>@meetings.CancellationDateTime</td> *@
+                                        <td>@meetings.CancellationDateTime</td>
                                         <td>@meetings.CancellationReason</td>
                                         <td class="d-flex gap-2 align-items-center">
 
                                             <!-- Edit Button -->
                                             <a asp-action="MeetingsAddEdit"
+                                            asp-route-id="@meetings.MeetingID"
                                                title="Edit"
                                                style=" width:36px;
                                                        height:36px;
@@ -184,7 +179,7 @@
                                             </a>
 
                                             <!-- Delete Button -->
-                                            <a asp-action="Delete" asp-controller="Meetings" asp-route-id="@meetings.MeetingID"
+                                            <a asp-action="DeleteMeetings" asp-route-id="@meetings.MeetingID"
                                                title="Delete"
                                                style=" width:36px;
                                                        height:36px;

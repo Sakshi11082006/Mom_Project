@@ -81,6 +81,7 @@ namespace Mom_Project.Controllers
                 staff.MobileNo = reader["MobileNo"].ToString();
                 staff.EmailAddress = reader["EmailAddress"].ToString();
                 staff.Remarks = reader["Remarks"].ToString();
+                staff.DepartmentID = Convert.ToInt32(reader["DepartmentID"]);
             }
 
             reader.Close();
