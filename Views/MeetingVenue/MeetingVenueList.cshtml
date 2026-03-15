@@ -1,105 +1,4 @@
-﻿@* @model List<MeetingVenueModel>
-<div class="pagetitle">
-    <h1>Meeting Venue List</h1>
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-controller="MeetingVenue" asp-action="MeetingVenueList">Home</a></li>
-            <li class="breadcrumb-item active">MeetingVenue List</li>
-        </ol>
-    </nav>
-</div><!-- End Page Title -->
-
-<section class="section">
-    <div class="row">
-        <div class="col-lg-12">
-
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title mb-0"><i class="bi bi-building me-2"></i>MeetingVenue List</h5>
-
-                        <a href="@Url.Action("MeetingVenueAddEdit","MeetingVenue")"
-                           class="btn btn-primary">
-                            <i class="bi bi-plus-lg"></i> Add MeetingVenue
-                        </a>
-                    </div>
-
-
-
-                    <!-- Table with stripped rows -->
-                    @if(Model != null && Model.Count > 0)
-                    {
-                        <table class="table datatable">
-                            <thead>
-                                <tr>
-                                    <th>MeetingVenue ID</th>
-                                    <th>MeetingVenue Name </th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var MeetingVenue in Model)
-                                {
-                                    <tr>
-                                        <td>@MeetingVenue.MeetingVenueID</td>
-                                        <td>@MeetingVenue.MeetingVenueName</td>
-                                        <td>
-                                        <td class="d-flex gap-2 align-items-center">
-
-                                            <!-- Edit Button -->
-                                            <a href="@Url.Action("MeetingVenueAddEdit", "MeetingVenue", new { id = MeetingVenue.MeetingVenueID })"
-                                               title="Edit"
-                                               style=" width:36px;
-                                                       height:36px;
-                                                       border:1.5px solid #0d6efd;
-                                                       border-radius:6px;
-                                                       display:flex;
-                                                       align-items:center;
-                                                       justify-content:center;
-                                                       color:#0d6efd;
-                                                       text-decoration:none;">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
-
-                                            <!-- Delete Button -->
-                                            <a href="@Url.Action("Delete", "MeetingVenue", new { id = MeetingVenue.MeetingVenueID })"
-                                               title="Delete"
-                                               style=" width:36px;
-                                                       height:36px;
-                                                       border:1.5px solid #dc3545;
-                                                       border-radius:6px;
-                                                       display:flex;
-                                                       align-items:center;
-                                                       justify-content:center;
-                                                       color:#dc3545;
-                                                       text-decoration:none;">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info">
-                            No departments found. Click "Add New Department" to create one.
-                        </div>
-                    }
-
-                </div>
-            </div>
-
-        </div>
-    </div>
-</section> *@
-
-
-
-
-
-@model List<MeetingVenueModel>
+﻿@model List<MeetingVenueModel>
 <div class="pagetitle">
     <h1>Meeting Venue List</h1>
     <nav>
@@ -144,11 +43,30 @@
                         </a>
                     </div>
 
+                    <!-- search -->
+
+                    <form method="post" asp-action="MeetingVenueList" asp-controller="MeetingVenue" class="mb-3">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label for="SearchText" class="form-label">Search Meeting Venue</label>
+                                <input type="text" name="SearchText" id="SearchText" class="form-control"
+                                       placeholder="Enter Meeting Venue name" value="@ViewBag.SearchText" />
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-info">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <a asp-action="MeetingVenueList" asp-controller="MeetingVenue" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-undo"></i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
 
                     @if (Model != null && Model.Count > 0)
                     {
                         <!-- Table with stripped rows -->
-                        <table class="table datatable">
+                        <table class="table ">
                             <thead>
                                 <tr>
                                     <th>#</th>

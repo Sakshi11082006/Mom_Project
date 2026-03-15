@@ -170,5 +170,58 @@ namespace Mom_Project.Controllers
                 return RedirectToAction("MeetingVenueList");
             }
         }
+
+        #region Search 
+        [HttpPost]
+        public IActionResult MeetingVenueList(IFormCollection formData)
+        {
+            string searchText = formData["SearchText"].ToString();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+                searchText = null;
+
+            ViewBag.SearchText = searchText;
+
+            List<MeetingVenueModel> list = GetMeetingVenue(searchText);
+            return View("MeetingVenueList", list);
+        }
+
+        private List<MeetingVenueModel> GetMeetingVenue(string searchText)
+        {
+            List<MeetingVenueModel> list = new List<MeetingVenueModel>();
+
+            SqlConnection con = new SqlConnection(
+                "Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
+
+            SqlCommand cmd = new SqlCommand();
+            cmd.Connection = con;
+            cmd.CommandText = "PR_MOM_MeetingVenue_SelectAll";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            if (searchText != null)
+                cmd.Parameters.AddWithValue("@SearchText", searchText);
+            else
+                cmd.Parameters.AddWithValue("@SearchText", DBNull.Value);
+
+            con.Open();
+
+            SqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                MeetingVenueModel mv = new MeetingVenueModel();
+                mv.MeetingVenueID = Convert.ToInt32(reader["MeetingVenueID"]);
+                mv.MeetingVenueName = reader["MeetingVenueName"].ToString();
+
+                list.Add(mv);
+            }
+
+            reader.Close();
+            con.Close();
+
+            return list;
+        }
+        #endregion
+
     }
 }

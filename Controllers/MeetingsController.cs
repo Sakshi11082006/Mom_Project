@@ -325,6 +325,67 @@ namespace Mom_Project.Controllers
         }
         #endregion
 
+        #region Search 
+        [HttpPost]
+        public IActionResult MeetingsList(IFormCollection formData)
+        {
+            string searchText = formData["SearchText"].ToString();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+                searchText = null;
+
+            ViewBag.SearchText = searchText;
+
+            List<MeetingsModel> list = GetMeetings(searchText);
+            return View("MeetingsList", list);
+        }
+
+        private List<MeetingsModel> GetMeetings(string searchText)
+        {
+            List<MeetingsModel> list = new List<MeetingsModel>();
+
+            SqlConnection con = new SqlConnection(
+                "Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
+
+            SqlCommand cmd = new SqlCommand();
+            cmd.Connection = con;
+            cmd.CommandText = "PR_MOM_Meetings_SelectAll";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            if (searchText != null)
+                cmd.Parameters.AddWithValue("@SearchText", searchText);
+            else
+                cmd.Parameters.AddWithValue("@SearchText", DBNull.Value);
+
+            con.Open();
+
+            SqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                MeetingsModel meetings = new MeetingsModel();
+                meetings.MeetingID = Convert.ToInt32(reader["MeetingID"]);
+                meetings.MeetingDate = Convert.ToDateTime(reader["MeetingDate"]);
+                meetings.MeetingDescription = reader["MeetingDescription"].ToString();
+                meetings.DocumentPath = reader["DocumentPath"].ToString();
+                meetings.IsCancelled = reader["IsCancelled"] != DBNull.Value
+                       && Convert.ToBoolean(reader["IsCancelled"]);
+
+                meetings.CancellationDateTime = reader["CancellationDateTime"] != DBNull.Value
+                                                ? Convert.ToDateTime(reader["CancellationDateTime"])
+                                                : null;
+
+                meetings.CancellationReason = reader["CancellationReason"].ToString();
+
+                list.Add(meetings);
+            }
+
+            reader.Close();
+            con.Close();
+
+            return list;
+        }
+        #endregion
     }
 }
 
