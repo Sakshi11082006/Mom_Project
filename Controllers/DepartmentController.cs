@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using Mom_Project.Models;
 using System.Data;
 
@@ -9,7 +11,6 @@ namespace Mom_Project.Controllers
     {
         [HttpGet]
         #region Department List
-
         public ActionResult<List<DepartmentModel>> Index()
         {
             List<DepartmentModel> list = new List<DepartmentModel>();
@@ -239,5 +240,68 @@ namespace Mom_Project.Controllers
         }
         #endregion
 
+        #region ExportExcel
+        public IActionResult ExportToExcel()
+        {
+            try
+            {
+                DataTable dt = new DataTable();
+
+                using (SqlConnection con = new SqlConnection("Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;"))
+                {
+                    con.Open();
+
+                    using (SqlCommand cmd = con.CreateCommand())
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.CommandText = "PR_MOM_Department_SelectAll";
+
+                        using (SqlDataReader dr  = cmd.ExecuteReader())
+                        {
+                            dt.Load(dr);
+                        }
+                    }
+                }
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("Department");
+
+                    for(int i=0; i < dt.Columns.Count; i++)
+                    {
+                        worksheet.Cell(1, i + 1).Value = dt.Columns[i].ColumnName;
+                        worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+                    }
+
+                    for (int row = 0; row < dt.Rows.Count; row++)
+                    {
+                        for (int col = 0; col < dt.Columns.Count; col++)
+                        {
+                            worksheet.Cell(row + 2, col + 1).Value = dt.Rows[row][col]?.ToString();
+                        }
+                    }
+
+                    worksheet.Columns().AdjustToContents();
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        return File(
+                            content,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "DepartmentList.xlsx"
+                        );
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error exporting data: " + ex.Message;
+                return RedirectToAction("Index");
+            }
+        }
+        #endregion
     }
 }
