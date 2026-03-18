@@ -8,6 +8,7 @@ namespace Mom_Project.Controllers
 {
     public class MeetingVenueController : Controller
     {
+        #region MeetingVenueList
         public ActionResult<List<MeetingVenueModel>> MeetingVenueList()
         {
             List<MeetingVenueModel> list = new List<MeetingVenueModel>();
@@ -38,7 +39,9 @@ namespace Mom_Project.Controllers
 
             return View(list);
         }
+        #endregion
 
+        #region MeetingVenueAddEdit
         [HttpGet]
         public IActionResult MeetingVenueAddEdit(int? id)
         {
@@ -52,7 +55,9 @@ namespace Mom_Project.Controllers
                 return View(new MeetingVenueModel());
             }
         }
+        #endregion
 
+        #region GetMeetingVenue
         public MeetingVenueModel GetMeetingVenueById(int id)
         {
             MeetingVenueModel MeetingVenue = new MeetingVenueModel();
@@ -78,7 +83,9 @@ namespace Mom_Project.Controllers
 
             return MeetingVenue;
         }
+        #endregion
 
+        #region Save
         [HttpPost]
         public IActionResult Save(MeetingVenueModel model)
         {
@@ -139,7 +146,9 @@ namespace Mom_Project.Controllers
                 return RedirectToAction("MeetingVenueList");
             }
         }
+        #endregion
 
+        #region Delete
         public IActionResult Delete(int id)
         {
             try
@@ -171,6 +180,7 @@ namespace Mom_Project.Controllers
                 return RedirectToAction("MeetingVenueList");
             }
         }
+        #endregion
 
         #region Search 
         [HttpPost]

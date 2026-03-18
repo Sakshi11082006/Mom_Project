@@ -9,6 +9,7 @@ namespace Mom_Project.Controllers
 {
     public class StaffController : Controller
     {
+        #region StaffList
         public ActionResult<List<StaffModel>> StaffList()
         {
             List<StaffModel> list = new List<StaffModel>();
@@ -42,6 +43,7 @@ namespace Mom_Project.Controllers
 
             return View(list);
         }
+        #endregion
 
         #region Add Edit
         [HttpGet]
@@ -61,6 +63,7 @@ namespace Mom_Project.Controllers
         }
         #endregion
 
+        #region GetStaff
         public StaffModel GetStaffById(int id)
         {
             StaffModel staff = new StaffModel();
@@ -90,6 +93,7 @@ namespace Mom_Project.Controllers
 
             return staff;
         }
+        #endregion
 
         #region Delete Record
         public IActionResult DeleteStaff(int id)

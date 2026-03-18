@@ -8,9 +8,10 @@ namespace Mom_Project.Controllers
 {
     public class MeetingTypeController : Controller
     {
+        #region MeetingTypeList
         public ActionResult<List<MeetingTypeModel>> MeetingTypeList()
         {
-            List <MeetingTypeModel> list = new List <MeetingTypeModel> ();
+            List<MeetingTypeModel> list = new List<MeetingTypeModel>();
 
             SqlConnection con = new SqlConnection("Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
 
@@ -22,15 +23,15 @@ namespace Mom_Project.Controllers
             con.Open();
 
             SqlDataReader reader = cmd.ExecuteReader();
-            
+
             while (reader.Read())
             {
-                MeetingTypeModel mt = new MeetingTypeModel ();  
+                MeetingTypeModel mt = new MeetingTypeModel();
                 mt.MeetingTypeID = Convert.ToInt32(reader["MeetingTypeID"]);
                 mt.MeetingTypeName = reader["MeetingTypeName"].ToString();
                 mt.Remarks = reader["Remarks"].ToString();
 
-                list.Add (mt);
+                list.Add(mt);
             }
 
             reader.Close();
@@ -38,6 +39,7 @@ namespace Mom_Project.Controllers
 
             return View(list);
         }
+        #endregion
 
         #region Search 
         [HttpPost]
@@ -93,6 +95,7 @@ namespace Mom_Project.Controllers
         }
         #endregion
 
+        #region MeetingTypeAddEdit
         [HttpGet]
         public IActionResult MeetingTypeAddEdit(int? id)
         {
@@ -106,7 +109,9 @@ namespace Mom_Project.Controllers
                 return View(new MeetingTypeModel());
             }
         }
+        #endregion
 
+        #region GetMeetingType
         public MeetingTypeModel GetMeetingTypeById(int id)
         {
             MeetingTypeModel mType = new MeetingTypeModel();
@@ -133,7 +138,9 @@ namespace Mom_Project.Controllers
 
             return mType;
         }
+        #endregion
 
+        #region Save
         [HttpPost]
         public IActionResult Save(MeetingTypeModel model)
         {
@@ -152,9 +159,9 @@ namespace Mom_Project.Controllers
                 model.Modified = DateTime.UtcNow;
 
                 SqlConnection con = new SqlConnection("Server=SAKSHISANTOKI\\SQLEXPRESS;Database=MOM_DOTNET;Trusted_Connection=True;TrustServerCertificate=True;");
-
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = con;
+
                 if (model.MeetingTypeID == 0)
                 {
                     cmd.CommandText = "PR_MOM_MeetingType_Insert";
@@ -211,7 +218,9 @@ namespace Mom_Project.Controllers
                 return RedirectToAction("MeetingTypeList");
             }
         }
+        #endregion
 
+        #region Delete
         public IActionResult Delete(int id)
         {
             try
@@ -244,6 +253,7 @@ namespace Mom_Project.Controllers
                 return RedirectToAction("MeetingTypeList");
             }
         }
+        #endregion
 
         #region ExportExcel
         public IActionResult ExportToExcel()

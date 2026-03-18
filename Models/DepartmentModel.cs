@@ -12,6 +12,9 @@ namespace Mom_Project.Models
         [Display(Name = "Department Name")]
         public string DepartmentName { get; set; }
 
+        public string DepartmentLogo { get; set; }
+        public IFormFile LogoFile { get; set; }
+
         [DataType(DataType.DateTime)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}")]
         [Display(Name = "Created Date")]

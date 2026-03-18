@@ -9,6 +9,13 @@ namespace Mom_Project.Controllers
 {
     public class DepartmentController : Controller
     {
+        private readonly IWebHostEnvironment _env;
+
+        public DepartmentController(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
+
         [HttpGet]
         #region Department List
         public ActionResult<List<DepartmentModel>> Index()
@@ -31,6 +38,7 @@ namespace Mom_Project.Controllers
                 DepartmentModel d = new DepartmentModel();
                 d.DepartmentID = Convert.ToInt32(reader["DepartmentID"]);
                 d.DepartmentName = reader["DepartmentName"].ToString();
+                d.DepartmentLogo = reader["DepartmentLogo"].ToString();
 
                 list.Add(d);
             }
@@ -84,6 +92,7 @@ namespace Mom_Project.Controllers
                 DepartmentModel d = new DepartmentModel();
                 d.DepartmentID = Convert.ToInt32(reader["DepartmentID"]);
                 d.DepartmentName = reader["DepartmentName"].ToString();
+                d.DepartmentLogo = reader["DepartmentLogo"].ToString();
 
                 list.Add(d);
             }
@@ -129,6 +138,7 @@ namespace Mom_Project.Controllers
             {
                 department.DepartmentID = Convert.ToInt32(reader["DepartmentID"]);
                 department.DepartmentName = reader["DepartmentName"].ToString();
+                department.DepartmentLogo = reader["DepartmentLogo"].ToString();
             }
 
             reader.Close();
@@ -143,7 +153,9 @@ namespace Mom_Project.Controllers
         public IActionResult Save(DepartmentModel model)
         {
             ModelState.Remove("DepartmentName");
+            ModelState.Remove("DepartmentLogo");
             if (string.IsNullOrEmpty(model.DepartmentName))
+
             {
                 ModelState.AddModelError("DepartmentName", "Department name can not be null or empty.");
             }
@@ -161,41 +173,58 @@ namespace Mom_Project.Controllers
                 if (model.DepartmentID == 0)
                 {
                     cmd.CommandText = "PR_MOM_Department_Insert";
-                    cmd.Parameters.AddWithValue("@Created", DateTime.Now);
+                    TempData["Success"] = "Department added successfully";
                 }
                 else
                 {
                     cmd.CommandText = "PR_MOM_Department_UpdateByPk";
                     cmd.Parameters.AddWithValue("@DepartmentID", model.DepartmentID);
+                    TempData["Success"] = "Department updated successfully";
                 }
 
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                SqlParameter deptName = new SqlParameter();
-                deptName.ParameterName = "@DepartmentName";
-                deptName.SqlDbType = SqlDbType.NVarChar;
-                deptName.Value = model.DepartmentName;
+                string filePath = model.DepartmentLogo;
 
-                cmd.Parameters.Add(deptName);
+                if (model.LogoFile != null)
+                {
+                    string folder = Path.Combine(_env.WebRootPath, "uploads");
+
+                    if (!Directory.Exists(folder))
+                        Directory.CreateDirectory(folder);
+
+                    string fileName = Guid.NewGuid() + Path.GetExtension(model.LogoFile.FileName);
+
+                    string fullPath = Path.Combine(folder, fileName);
+
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        model.LogoFile.CopyTo(stream);
+                    }
+
+                    filePath = "/uploads/" + fileName;
+                }
+
+                else if (model.DepartmentID == 0)
+                {
+                    // only for NEW record
+                    filePath = "/uploads/default.png";
+                }
+
+                cmd.Parameters.AddWithValue("@DepartmentName", model.DepartmentName);
+                cmd.Parameters.AddWithValue("@DepartmentLogo", filePath);
+
+
+                if (model.DepartmentID == 0) // INSERT ONLY
+                {
+                    cmd.Parameters.AddWithValue("@Created", DateTime.Now);  // ✅ correct place
+                }
 
                 cmd.Parameters.AddWithValue("@Modified", DateTime.Now);
 
                 con.Open();
                 int noOfRows = cmd.ExecuteNonQuery();
                 con.Close();
-
-                if (noOfRows > 0)
-                {
-                    if (model.DepartmentID == 0)
-                    {
-                        TempData["Success"] = "Department added successfully";
-                    }
-                    else
-                    {
-                        TempData["Success"] = "Department updated successfully";
-                    }
-                }
-
                 return RedirectToAction("Index");
             }
             catch (Exception ex)

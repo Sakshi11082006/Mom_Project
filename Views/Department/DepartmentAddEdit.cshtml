@@ -29,7 +29,7 @@
                 <!-- Card Body -->
                 <div class="card-body p-4">
 
-                    <form asp-controller="Department" asp-action="Save" method="post">
+                    <form asp-controller="Department" asp-action="Save" method="post" enctype="multipart/form-data">
 
                         <input type="hidden" asp-for="DepartmentID" />
 
@@ -47,6 +47,24 @@
 
                             <small class="text-muted">
                                 e.g., Human Resources, Information Technology, Finance
+                            </small>
+                        </div>
+
+                        <!-- Department Logo Upload -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Department Logo</label>
+
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-image"></i>
+                                </span>
+
+                                <input asp-for="LogoFile" type="file"
+                                       class="form-control border-primary" />
+                            </div>
+
+                            <small class="text-muted">
+                                Upload department logo (PNG, JPG)
                             </small>
                         </div>
 
